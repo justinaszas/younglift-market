@@ -1,8 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ListingCard } from '@/components/listings/ListingCard'
@@ -10,7 +8,7 @@ import { CreatorCard } from '@/components/creators/CreatorCard'
 import { Button } from '@/components/ui/Button'
 import { Listing, Profile, CATEGORIES } from '@/types/database'
 
-export default function ShopPage() {
+function ShopContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const supabase = createClient()
@@ -258,5 +256,30 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-surface border border-divider rounded animate-pulse">
+                <div className="aspect-square bg-surface-2" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3 bg-surface-2 rounded w-1/3" />
+                  <div className="h-4 bg-surface-2 rounded w-3/4" />
+                  <div className="h-5 bg-surface-2 rounded w-1/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <ShopContent />
+    </Suspense>
   )
 }
