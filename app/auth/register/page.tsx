@@ -54,7 +54,7 @@ function RegisterForm() {
       return
     }
 
-    router.push(role === 'creator' ? '/dashboard' : '/')
+    router.push(role === 'creator' ? '/onboarding' : '/')
     router.refresh()
   }
 

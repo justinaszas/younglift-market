@@ -10,6 +10,7 @@ export interface Profile {
   banner_url: string | null
   shop_name: string | null
   bio: string | null
+  location: string | null
   stripe_account_id: string | null
   stripe_onboarded: boolean
   created_at: string
