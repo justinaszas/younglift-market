@@ -70,7 +70,7 @@ function RegisterForm() {
       return
     }
 
-    router.push(role === 'creator' ? '/onboarding' : '/')
+    router.push('/dashboard')
     router.refresh()
   }
 
@@ -84,7 +84,7 @@ function RegisterForm() {
           <p className="text-muted text-sm">Create your Young Lift Market account.</p>
         </div>
 
-        <form onSubmit={step === 1 ? (e) => { e.preventDefault(); setStep(2) } : handleRegister} className="space-y-4">
+        <form onSubmit={step === 1 && role === 'creator' ? (e) => { e.preventDefault(); setStep(2) } : handleRegister} className="space-y-4">
           {error && (
             <div className="border border-red-500/30 bg-red-500/10 rounded px-4 py-3 text-sm text-red-400">
               {error}
