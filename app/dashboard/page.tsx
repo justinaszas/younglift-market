@@ -8,7 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { formatPriceFromDollars } from '@/lib/utils'
-import { Listing, Order, Profile } from '@/types/database'
+import { Listing, Order, OrderStatus, Profile } from '@/types/database'
+import { StatusStepper } from '@/components/orders/StatusStepper'
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -392,64 +393,83 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="border border-divider rounded bg-surface p-4"
-                >
-                  <div className="flex items-center justify-between gap-4 mb-3">
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {order.listings?.title ?? 'Listing removed'}
-                      </p>
-                      <p className="text-xs text-muted mt-0.5">
-                        Order #{order.id.slice(0, 8)} ·{' '}
-                        {new Date(order.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-accent">
-                        {formatPriceFromDollars(order.amount)}
+              {orders.map((order) => {
+                const listing = order.listings
+                return (
+                  <div key={order.id} className="border border-divider rounded bg-surface overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4 px-4 py-2.5 border-b border-divider bg-surface-2">
+                      <span className="text-xs font-mono text-muted">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                        <span className="font-sans ml-2">
+                          · {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
                       </span>
-                      <Badge
-                        variant={
-                          order.status === 'paid' || order.status === 'completed'
-                            ? 'accent'
-                            : 'default'
-                        }
-                      >
-                        {order.status}
-                      </Badge>
+                      <span className="text-sm font-black text-accent">
+                        {formatPriceFromDollars(order.amount - order.platform_fee)}
+                      </span>
                     </div>
+
+                    {/* Product row */}
+                    <div className="flex items-center gap-3 p-4 pb-3">
+                      <div className="relative w-12 h-12 rounded bg-surface-2 flex-shrink-0 overflow-hidden border border-divider">
+                        {listing?.images?.[0] ? (
+                          <Image
+                            src={listing.images[0]}
+                            alt={listing.title ?? ''}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted/30">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">
+                          {listing?.title ?? 'Listing removed'}
+                        </p>
+                        {order.shipping_address && (
+                          <p className="text-xs text-muted mt-0.5 truncate">
+                            → {order.shipping_address.name}, {order.shipping_address.city}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Stepper */}
+                    <div className="px-4 pb-3">
+                      <StatusStepper status={order.status} />
+                    </div>
+
+                    {/* Action buttons */}
+                    {(order.status === 'paid' || order.status === 'shipped') && (
+                      <div className="px-4 pb-4">
+                        {order.status === 'paid' && (
+                          <button
+                            onClick={() => handleUpdateOrderStatus(order.id, 'shipped')}
+                            className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
+                          >
+                            Mark as Shipped →
+                          </button>
+                        )}
+                        {order.status === 'shipped' && (
+                          <button
+                            onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                            className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
+                          >
+                            Mark as Delivered →
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-
-                  {order.shipping_address && (
-                    <div className="text-xs text-muted bg-surface-2 rounded px-3 py-2 mb-3">
-                      <span className="font-semibold text-white">Ship to: </span>
-                      {order.shipping_address.name} · {order.shipping_address.line1},{' '}
-                      {order.shipping_address.city}, {order.shipping_address.state}{' '}
-                      {order.shipping_address.postal_code} · {order.shipping_address.country}
-                    </div>
-                  )}
-
-                  {order.status === 'paid' && (
-                    <button
-                      onClick={() => handleUpdateOrderStatus(order.id, 'shipped')}
-                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
-                    >
-                      Mark as Shipped
-                    </button>
-                  )}
-                  {order.status === 'shipped' && (
-                    <button
-                      onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
-                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
-                    >
-                      Mark as Completed
-                    </button>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

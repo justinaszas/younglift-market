@@ -5,16 +5,24 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Badge } from '@/components/ui/Badge'
 import { formatPriceFromDollars } from '@/lib/utils'
-import { Order } from '@/types/database'
+import { Order, OrderStatus } from '@/types/database'
+import { StatusStepper } from '@/components/orders/StatusStepper'
 
-const STATUS_VARIANT: Record<string, 'accent' | 'default' | 'muted'> = {
-  paid: 'accent',
-  completed: 'accent',
-  shipped: 'default',
-  pending: 'muted',
-  cancelled: 'muted',
+const STATUS_LABEL: Record<OrderStatus, string> = {
+  pending:   'Pending',
+  paid:      'Processing',
+  shipped:   'Shipped',
+  completed: 'Delivered',
+  cancelled: 'Cancelled',
+}
+
+const STATUS_COLOR: Record<OrderStatus, string> = {
+  pending:   'text-muted',
+  paid:      'text-yellow-400',
+  shipped:   'text-accent',
+  completed: 'text-accent',
+  cancelled: 'text-red-400',
 }
 
 export default function MyOrdersPage() {
@@ -49,10 +57,10 @@ export default function MyOrdersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 animate-pulse space-y-3">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 animate-pulse space-y-4">
         <div className="h-8 bg-surface rounded w-40 mb-8" />
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-28 bg-surface rounded border border-divider" />
+          <div key={i} className="h-44 bg-surface rounded border border-divider" />
         ))}
       </div>
     )
@@ -62,7 +70,9 @@ export default function MyOrdersPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-black uppercase tracking-tight mb-1">My Orders</h1>
-        <p className="text-muted text-sm">{orders.length} order{orders.length !== 1 ? 's' : ''}</p>
+        <p className="text-muted text-sm">
+          {orders.length} order{orders.length !== 1 ? 's' : ''}
+        </p>
       </div>
 
       {orders.length === 0 ? (
@@ -74,11 +84,7 @@ export default function MyOrdersPage() {
             stroke="currentColor"
             strokeWidth={1.5}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
           <p className="text-muted text-sm mb-4">No orders yet.</p>
           <Link href="/shop" className="text-accent hover:underline text-sm font-semibold">
@@ -93,26 +99,26 @@ export default function MyOrdersPage() {
             const creatorName = creator?.shop_name ?? creator?.full_name ?? 'Creator'
 
             return (
-              <div
-                key={order.id}
-                className="border border-divider rounded bg-surface overflow-hidden"
-              >
-                <div className="flex items-center justify-between gap-4 px-4 py-2 border-b border-divider bg-surface-2">
-                  <span className="text-xs text-muted">
-                    Order <span className="text-white font-mono">#{order.id.slice(0, 8)}</span>
-                    {' · '}
-                    {new Date(order.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+              <div key={order.id} className="border border-divider rounded bg-surface overflow-hidden">
+                {/* Order header */}
+                <div className="flex items-center justify-between gap-4 px-4 py-2.5 border-b border-divider bg-surface-2">
+                  <span className="text-xs text-muted font-mono">
+                    #{order.id.slice(0, 8).toUpperCase()}
+                    <span className="font-sans text-muted ml-2">
+                      · {new Date(order.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
                   </span>
-                  <Badge variant={STATUS_VARIANT[order.status] ?? 'default'}>
-                    {order.status}
-                  </Badge>
+                  <span className={`text-xs font-bold uppercase tracking-wider ${STATUS_COLOR[order.status]}`}>
+                    {STATUS_LABEL[order.status]}
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-4 p-4">
+                {/* Product row */}
+                <div className="flex items-center gap-4 p-4 pb-3">
                   <div className="relative w-16 h-16 rounded bg-surface-2 flex-shrink-0 overflow-hidden border border-divider">
                     {listing?.images?.[0] ? (
                       <Image
@@ -135,12 +141,12 @@ export default function MyOrdersPage() {
                     {listing ? (
                       <Link
                         href={`/listings/${listing.id}`}
-                        className="text-sm font-semibold text-white hover:text-accent transition-colors truncate block"
+                        className="text-sm font-bold text-white hover:text-accent transition-colors truncate block"
                       >
                         {listing.title}
                       </Link>
                     ) : (
-                      <p className="text-sm font-semibold text-muted">Listing removed</p>
+                      <p className="text-sm font-bold text-muted">Listing removed</p>
                     )}
                     {creator && (
                       <Link
@@ -152,17 +158,21 @@ export default function MyOrdersPage() {
                     )}
                   </div>
 
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-black text-accent">
-                      {formatPriceFromDollars(order.amount)}
-                    </p>
-                  </div>
+                  <p className="text-sm font-black text-accent flex-shrink-0">
+                    {formatPriceFromDollars(order.amount)}
+                  </p>
                 </div>
 
+                {/* Status stepper */}
+                <div className="px-4 pb-4">
+                  <StatusStepper status={order.status} />
+                </div>
+
+                {/* Shipping address */}
                 {order.shipping_address && (
                   <div className="px-4 pb-4">
                     <div className="text-xs text-muted bg-surface-2 rounded px-3 py-2 border border-divider">
-                      <span className="font-semibold text-white/70 uppercase tracking-wider text-[10px]">
+                      <span className="font-semibold text-white/60 uppercase tracking-wider text-[10px]">
                         Ship to
                       </span>
                       <p className="mt-0.5">
