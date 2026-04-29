@@ -12,6 +12,7 @@ export function Navbar() {
   const [role, setRole] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [wishlistCount, setWishlistCount] = useState(0)
   const supabase = createClient()
   const router = useRouter()
 
@@ -23,12 +24,15 @@ export function Navbar() {
       setUser(user)
 
       if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        setRole(data?.role ?? null)
+        const [{ data: profileData }, { count }] = await Promise.all([
+          supabase.from('profiles').select('role').eq('id', user.id).single(),
+          supabase
+            .from('wishlists')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id),
+        ])
+        setRole(profileData?.role ?? null)
+        setWishlistCount(count ?? 0)
       }
     }
 
@@ -88,6 +92,32 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            {user && (
+              <Link
+                href="/wishlist"
+                aria-label="Wishlist"
+                className="relative p-2 text-muted hover:text-white transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                    {wishlistCount > 9 ? '9+' : wishlistCount}
+                  </span>
+                )}
+              </Link>
+            )}
             {user ? (
               <div className="relative">
                 <button
@@ -107,6 +137,16 @@ export function Navbar() {
                         Dashboard
                       </Link>
                     )}
+                    <Link
+                      href="/wishlist"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-white hover:text-accent hover:bg-surface-2 transition-colors"
+                    >
+                      Wishlist
+                      {wishlistCount > 0 && (
+                        <span className="ml-1.5 text-xs text-muted">({wishlistCount})</span>
+                      )}
+                    </Link>
                     <Link
                       href="/dashboard/orders"
                       onClick={() => setDropdownOpen(false)}
@@ -185,6 +225,20 @@ export function Navbar() {
                 className="block text-sm font-semibold uppercase tracking-wider text-muted hover:text-white py-2"
               >
                 Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link
+                href="/wishlist"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted hover:text-white py-2"
+              >
+                Wishlist
+                {wishlistCount > 0 && (
+                  <span className="text-xs font-normal text-accent normal-case tracking-normal">
+                    ({wishlistCount})
+                  </span>
+                )}
               </Link>
             )}
             <div className="flex gap-3 pt-2">

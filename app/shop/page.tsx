@@ -23,6 +23,7 @@ function ShopContent() {
   const [searchInput, setSearchInput] = useState(search)
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set())
 
   const isCreatorView = view === 'creators'
 
@@ -92,6 +93,19 @@ function ShopContent() {
       fetchListings()
     }
   }, [isCreatorView, fetchListings, fetchCreators])
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('wishlists')
+        .select('listing_id')
+        .eq('user_id', user.id)
+      setWishlistIds(new Set(data?.map((w) => w.listing_id) ?? []))
+    }
+    fetchWishlist()
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -267,7 +281,11 @@ function ShopContent() {
           ) : listings.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {listings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  wishlisted={wishlistIds.has(listing.id)}
+                />
               ))}
             </div>
           ) : (

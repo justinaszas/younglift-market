@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge'
 import { formatPriceFromDollars } from '@/lib/utils'
 import { Listing } from '@/types/database'
 import { ReviewSection } from '@/components/listings/ReviewSection'
+import { WishlistButton } from '@/components/listings/WishlistButton'
 
 export default function ListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -213,15 +214,21 @@ export default function ListingPage() {
             </span>
           </div>
 
-          <div className="space-y-3 mb-8">
-            <Button
-              size="lg"
-              fullWidth
-              onClick={handleBuyNow}
-              disabled={isSoldOut || buying}
-            >
-              {buying ? 'Redirecting...' : isSoldOut ? 'Sold Out' : 'Buy Now'}
-            </Button>
+          <div className="mb-8">
+            <div className="flex gap-3 mb-3">
+              <Button
+                size="lg"
+                fullWidth
+                onClick={handleBuyNow}
+                disabled={isSoldOut || buying}
+              >
+                {buying ? 'Redirecting...' : isSoldOut ? 'Sold Out' : 'Buy Now'}
+              </Button>
+              <WishlistButton
+                listingId={id}
+                className="w-14 border border-divider rounded bg-surface hover:border-red-400/30 flex-shrink-0 transition-colors"
+              />
+            </div>
             <p className="text-xs text-muted text-center">
               Secure checkout powered by Stripe
             </p>

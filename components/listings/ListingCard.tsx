@@ -1,15 +1,20 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Listing } from '@/types/database'
 import { formatPriceFromDollars } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { Stars } from '@/components/ui/Stars'
+import { WishlistButton } from './WishlistButton'
 
 interface ListingCardProps {
   listing: Listing
+  wishlisted?: boolean
+  onWishlistToggle?: (newSaved: boolean) => void
 }
 
-export function ListingCard({ listing }: ListingCardProps) {
+export function ListingCard({ listing, wishlisted, onWishlistToggle }: ListingCardProps) {
   const image = listing.images?.[0] ?? null
   const creatorName = listing.profiles?.shop_name ?? listing.profiles?.full_name ?? 'Creator'
   const avatarUrl = listing.profiles?.avatar_url ?? null
@@ -50,6 +55,12 @@ export function ListingCard({ listing }: ListingCardProps) {
               </span>
             </div>
           )}
+          <WishlistButton
+            listingId={listing.id}
+            initialSaved={wishlisted}
+            onToggle={onWishlistToggle}
+            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-bg/75 backdrop-blur-sm border border-white/10 hover:border-red-400/40 transition-colors"
+          />
         </div>
 
         <div className="p-3">
