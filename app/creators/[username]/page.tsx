@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
@@ -8,20 +9,36 @@ interface Props {
   params: { username: string }
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient()
   const { data: creator } = await supabase
     .from('profiles')
-    .select('shop_name, full_name, bio')
+    .select('shop_name, full_name, bio, avatar_url')
     .eq('username', params.username)
     .single()
 
   if (!creator) return { title: 'Creator Not Found' }
 
   const name = creator.shop_name ?? creator.full_name ?? params.username
+  const description = creator.bio ?? `Shop ${name} on Young Lift Market`
+
   return {
     title: name,
-    description: creator.bio ?? `Shop ${name} on Young Lift Market`,
+    description,
+    openGraph: {
+      title: `${name} | Young Lift Market`,
+      description,
+      type: 'profile',
+      images: creator.avatar_url
+        ? [{ url: creator.avatar_url, width: 400, height: 400, alt: name }]
+        : [],
+    },
+    twitter: {
+      card: creator.avatar_url ? 'summary' : 'summary',
+      title: name,
+      description,
+      ...(creator.avatar_url ? { images: [creator.avatar_url] } : {}),
+    },
   }
 }
 

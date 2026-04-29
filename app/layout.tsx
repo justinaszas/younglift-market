@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://youngliftmarket.com'),
   title: {
     default: 'Young Lift Market — Handmade Crafts Marketplace',
     template: '%s | Young Lift Market',
@@ -11,6 +12,14 @@ export const metadata: Metadata = {
   description:
     'Discover and buy unique handmade goods from independent creators. Young Lift Market connects you with talented artisans worldwide.',
   keywords: ['handmade', 'crafts', 'marketplace', 'artisan', 'independent creators'],
+  openGraph: {
+    siteName: 'Young Lift Market',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    site: '@youngliftmarket',
+  },
 }
 
 export default function RootLayout({

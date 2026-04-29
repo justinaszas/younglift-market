@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ListingCard } from '@/components/listings/ListingCard'
@@ -6,6 +7,23 @@ import { Button } from '@/components/ui/Button'
 import { Listing, Profile, CATEGORIES } from '@/types/database'
 
 export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: 'Young Lift Market — Handmade Crafts Marketplace',
+  description:
+    'Discover and buy unique handmade goods from independent creators. Every piece tells a story. Every purchase supports an artist.',
+  openGraph: {
+    title: 'Young Lift Market — Handmade Crafts Marketplace',
+    description:
+      'Discover and buy unique handmade goods from independent creators. Every piece tells a story. Every purchase supports an artist.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Young Lift Market — Handmade Crafts Marketplace',
+    description: 'Discover and buy unique handmade goods from independent creators.',
+  },
+}
 
 async function getFeaturedCreators(): Promise<Profile[]> {
   const supabase = createClient()
