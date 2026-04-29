@@ -28,6 +28,22 @@ export interface Listing {
   is_active: boolean
   created_at: string
   profiles?: Profile
+  avg_rating?: number | null
+  review_count?: number
+}
+
+export interface Review {
+  id: string
+  listing_id: string
+  buyer_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  profiles?: {
+    full_name: string | null
+    username: string | null
+    avatar_url: string | null
+  }
 }
 
 export interface ShippingAddress {

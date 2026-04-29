@@ -41,7 +41,32 @@ function ShopContent() {
     if (priceMax) query = query.lte('price', parseFloat(priceMax))
 
     const { data } = await query
-    setListings(data ?? [])
+
+    if (!data || data.length === 0) {
+      setListings([])
+      setLoading(false)
+      return
+    }
+
+    const { data: reviewData } = await supabase
+      .from('reviews')
+      .select('listing_id, rating')
+      .in('listing_id', data.map((l) => l.id))
+
+    const ratingMap: Record<string, { sum: number; count: number }> = {}
+    for (const r of reviewData ?? []) {
+      if (!ratingMap[r.listing_id]) ratingMap[r.listing_id] = { sum: 0, count: 0 }
+      ratingMap[r.listing_id].sum += r.rating
+      ratingMap[r.listing_id].count++
+    }
+
+    setListings(
+      data.map((l) => ({
+        ...l,
+        avg_rating: ratingMap[l.id] ? ratingMap[l.id].sum / ratingMap[l.id].count : null,
+        review_count: ratingMap[l.id]?.count ?? 0,
+      }))
+    )
     setLoading(false)
   }, [category, search, priceMin, priceMax])
 

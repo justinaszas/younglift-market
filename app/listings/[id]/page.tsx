@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { formatPriceFromDollars } from '@/lib/utils'
 import { Listing } from '@/types/database'
+import { ReviewSection } from '@/components/listings/ReviewSection'
 
 export default function ListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -117,7 +118,7 @@ export default function ListingPage() {
         </nav>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-0">
         {/* Image gallery */}
         <div className="space-y-3">
           <div className="relative aspect-square bg-surface border border-divider rounded overflow-hidden">
@@ -269,6 +270,8 @@ export default function ListingPage() {
           )}
         </div>
       </div>
+
+      <ReviewSection listingId={id} />
     </div>
   )
 }

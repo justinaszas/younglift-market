@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Listing } from '@/types/database'
 import { formatPriceFromDollars } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
+import { Stars } from '@/components/ui/Stars'
 
 interface ListingCardProps {
   listing: Listing
@@ -58,9 +59,16 @@ export function ListingCard({ listing }: ListingCardProps) {
           <h3 className="text-sm font-semibold text-white leading-tight mb-1 line-clamp-2 group-hover:text-accent transition-colors">
             {listing.title}
           </h3>
-          <p className="text-accent font-bold text-base mb-2">
+          <p className="text-accent font-bold text-base mb-1.5">
             {formatPriceFromDollars(listing.price)}
           </p>
+
+          {listing.avg_rating != null && !!listing.review_count && (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Stars rating={listing.avg_rating} size="sm" />
+              <span className="text-xs text-muted">({listing.review_count})</span>
+            </div>
+          )}
 
           {listing.profiles && (
             <div className="flex items-center gap-2 pt-2 border-t border-divider">
