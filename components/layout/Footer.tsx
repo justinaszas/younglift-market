@@ -47,8 +47,8 @@ export function Footer() {
               {[
                 { label: 'Become a Creator', href: '/auth/register?role=creator' },
                 { label: 'Creator Dashboard', href: '/dashboard' },
-                { label: 'How It Works', href: '#' },
-                { label: 'Fees & Payments', href: '#' },
+                { label: 'How It Works', href: '/how-it-works' },
+                { label: 'Fees & Payments', href: '/how-it-works#fees' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
