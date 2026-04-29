@@ -12,6 +12,7 @@ import { Listing } from '@/types/database'
 import { ReviewSection } from '@/components/listings/ReviewSection'
 import { WishlistButton } from '@/components/listings/WishlistButton'
 import { ContactSellerButton } from '@/components/messages/ContactSellerButton'
+import { ShareButtons } from '@/components/listings/ShareButtons'
 
 export default function ListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -233,6 +234,10 @@ export default function ListingPage() {
             <p className="text-xs text-muted text-center">
               Secure checkout powered by Stripe
             </p>
+          </div>
+
+          <div className="mb-8">
+            <ShareButtons title={listing.title} />
           </div>
 
           {/* Creator card */}
