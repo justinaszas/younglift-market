@@ -87,6 +87,18 @@ export default function DashboardPage() {
     setListings((prev) => prev.filter((l) => l.id !== id))
   }
 
+  const handleUpdateOrderStatus = async (orderId: string, status: 'shipped' | 'completed') => {
+    const { data } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', orderId)
+      .select()
+      .single()
+    if (data) {
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)))
+    }
+  }
+
   const handleToggleActive = async (listing: Listing) => {
     const { data } = await supabase
       .from('listings')
@@ -412,12 +424,29 @@ export default function DashboardPage() {
                   </div>
 
                   {order.shipping_address && (
-                    <div className="text-xs text-muted bg-surface-2 rounded px-3 py-2">
+                    <div className="text-xs text-muted bg-surface-2 rounded px-3 py-2 mb-3">
                       <span className="font-semibold text-white">Ship to: </span>
                       {order.shipping_address.name} · {order.shipping_address.line1},{' '}
                       {order.shipping_address.city}, {order.shipping_address.state}{' '}
                       {order.shipping_address.postal_code} · {order.shipping_address.country}
                     </div>
+                  )}
+
+                  {order.status === 'paid' && (
+                    <button
+                      onClick={() => handleUpdateOrderStatus(order.id, 'shipped')}
+                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
+                    >
+                      Mark as Shipped
+                    </button>
+                  )}
+                  {order.status === 'shipped' && (
+                    <button
+                      onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border border-accent/30 text-accent hover:bg-accent/10 transition-colors"
+                    >
+                      Mark as Completed
+                    </button>
                   )}
                 </div>
               ))}

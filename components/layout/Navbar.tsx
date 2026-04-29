@@ -13,6 +13,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(0)
+  const [unreadCount, setUnreadCount] = useState(0)
   const supabase = createClient()
   const router = useRouter()
 
@@ -24,15 +25,21 @@ export function Navbar() {
       setUser(user)
 
       if (user) {
-        const [{ data: profileData }, { count }] = await Promise.all([
+        const [{ data: profileData }, { count: wCount }, { count: mCount }] = await Promise.all([
           supabase.from('profiles').select('role').eq('id', user.id).single(),
           supabase
             .from('wishlists')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id),
+          supabase
+            .from('messages')
+            .select('id', { count: 'exact', head: true })
+            .neq('sender_id', user.id)
+            .is('read_at', null),
         ])
         setRole(profileData?.role ?? null)
-        setWishlistCount(count ?? 0)
+        setWishlistCount(wCount ?? 0)
+        setUnreadCount(mCount ?? 0)
       }
     }
 
@@ -94,6 +101,22 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {user && (
               <Link
+                href="/messages"
+                aria-label="Messages"
+                className="relative p-2 text-muted hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-accent text-black text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+            {user && (
+              <Link
                 href="/wishlist"
                 aria-label="Wishlist"
                 className="relative p-2 text-muted hover:text-white transition-colors"
@@ -137,6 +160,16 @@ export function Navbar() {
                         Dashboard
                       </Link>
                     )}
+                    <Link
+                      href="/messages"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-white hover:text-accent hover:bg-surface-2 transition-colors"
+                    >
+                      Messages
+                      {unreadCount > 0 && (
+                        <span className="ml-1.5 text-xs text-accent">({unreadCount})</span>
+                      )}
+                    </Link>
                     <Link
                       href="/wishlist"
                       onClick={() => setDropdownOpen(false)}
@@ -225,6 +258,20 @@ export function Navbar() {
                 className="block text-sm font-semibold uppercase tracking-wider text-muted hover:text-white py-2"
               >
                 Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link
+                href="/messages"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted hover:text-white py-2"
+              >
+                Messages
+                {unreadCount > 0 && (
+                  <span className="text-xs font-normal text-accent normal-case tracking-normal">
+                    ({unreadCount})
+                  </span>
+                )}
               </Link>
             )}
             {user && (

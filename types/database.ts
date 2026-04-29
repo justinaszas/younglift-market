@@ -70,6 +70,28 @@ export interface Order {
   profiles?: Profile
 }
 
+export interface Conversation {
+  id: string
+  buyer_id: string
+  seller_id: string
+  listing_id: string | null
+  created_at: string
+  updated_at: string
+  buyer?: Pick<Profile, 'id' | 'full_name' | 'username' | 'avatar_url' | 'shop_name'>
+  seller?: Pick<Profile, 'id' | 'full_name' | 'username' | 'avatar_url' | 'shop_name'>
+  listing?: Pick<Listing, 'id' | 'title' | 'images'>
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  read_at: string | null
+  created_at: string
+  sender?: Pick<Profile, 'id' | 'full_name' | 'username' | 'avatar_url' | 'shop_name'>
+}
+
 export interface Wishlist {
   id: string
   user_id: string

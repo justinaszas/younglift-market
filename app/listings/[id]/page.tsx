@@ -11,6 +11,7 @@ import { formatPriceFromDollars } from '@/lib/utils'
 import { Listing } from '@/types/database'
 import { ReviewSection } from '@/components/listings/ReviewSection'
 import { WishlistButton } from '@/components/listings/WishlistButton'
+import { ContactSellerButton } from '@/components/messages/ContactSellerButton'
 
 export default function ListingPage() {
   const { id } = useParams<{ id: string }>()
@@ -273,6 +274,15 @@ export default function ListingPage() {
                   View Shop →
                 </span>
               </Link>
+              <div className="mt-3">
+                <ContactSellerButton
+                  sellerId={creator.id}
+                  listingId={id}
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                />
+              </div>
             </div>
           )}
         </div>

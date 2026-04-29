@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { ListingCard } from '@/components/listings/ListingCard'
-import { Button } from '@/components/ui/Button'
+import { ContactSellerButton } from '@/components/messages/ContactSellerButton'
 
 interface Props {
   params: { username: string }
@@ -120,9 +120,7 @@ export default async function CreatorProfilePage({ params }: Props) {
               <div className="text-xl font-black text-white">{totalListings}</div>
               <div className="text-xs text-muted uppercase tracking-wider">Listings</div>
             </div>
-            <Button variant="ghost" size="sm">
-              Follow
-            </Button>
+            <ContactSellerButton sellerId={creator.id} variant="ghost" size="sm" />
           </div>
         </div>
 
