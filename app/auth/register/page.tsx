@@ -28,18 +28,34 @@ function RegisterForm() {
     setLoading(true)
     setError(null)
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
 
-    if (signUpError || !data.user) {
-      setError(signUpError?.message ?? 'Sign up failed')
+    if (signUpError) {
+      setError(signUpError.message)
       setLoading(false)
       return
     }
 
-    const { error: profileError } = await supabase.from('profiles').insert({
+    if (!data.user) {
+      setError('Sign up failed. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    // When Supabase email confirmation is enabled, signUp returns session: null.
+    // Attempt an explicit sign-in so the client has an active session for the upsert below.
+    if (!data.session) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInError) {
+        setError('Check your inbox — confirm your email before logging in.')
+        setLoading(false)
+        return
+      }
+    }
+
+    // The handle_new_user trigger already inserted a stub profile row on auth.users insert,
+    // so we upsert (not insert) to fill in the full profile data without a PK conflict.
+    const { error: profileError } = await supabase.from('profiles').upsert({
       id: data.user.id,
       role,
       full_name: fullName,
