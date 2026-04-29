@@ -18,7 +18,13 @@ export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'orders'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'orders'>(() => {
+    if (typeof window !== 'undefined') {
+      const tab = new URLSearchParams(window.location.search).get('tab')
+      if (tab === 'listings' || tab === 'orders') return tab
+    }
+    return 'overview'
+  })
   const [connectLoading, setConnectLoading] = useState(false)
 
   useEffect(() => {
@@ -142,7 +148,7 @@ export default function DashboardPage() {
               {connectLoading ? 'Connecting...' : '⚡ Connect Stripe'}
             </Button>
           )}
-          <Link href="/dashboard/listings/new">
+          <Link href="/dashboard/new-listing">
             <Button size="sm">+ New Listing</Button>
           </Link>
         </div>
@@ -240,7 +246,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted">{listings.length} listing{listings.length !== 1 ? 's' : ''}</p>
-            <Link href="/dashboard/listings/new">
+            <Link href="/dashboard/new-listing">
               <Button size="sm">+ Add Listing</Button>
             </Link>
           </div>
@@ -248,7 +254,7 @@ export default function DashboardPage() {
           {listings.length === 0 ? (
             <div className="border border-dashed border-divider rounded p-16 text-center">
               <p className="text-muted text-sm mb-4">You haven&apos;t listed anything yet.</p>
-              <Link href="/dashboard/listings/new">
+              <Link href="/dashboard/new-listing">
                 <Button variant="ghost">Create Your First Listing</Button>
               </Link>
             </div>

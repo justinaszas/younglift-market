@@ -45,7 +45,7 @@ export function ListingForm({ initialData, onSubmit, loading }: ListingFormProps
       const ext = file.name.split('.').pop()
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
-      const { error } = await supabase.storage.from('listings').upload(path, file, {
+      const { error } = await supabase.storage.from('listing-images').upload(path, file, {
         cacheControl: '3600',
         upsert: false,
       })
@@ -55,7 +55,7 @@ export function ListingForm({ initialData, onSubmit, loading }: ListingFormProps
         break
       }
 
-      const { data: urlData } = supabase.storage.from('listings').getPublicUrl(path)
+      const { data: urlData } = supabase.storage.from('listing-images').getPublicUrl(path)
       uploaded.push(urlData.publicUrl)
     }
 
@@ -109,7 +109,7 @@ export function ListingForm({ initialData, onSubmit, loading }: ListingFormProps
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading || images.length >= 6}
+            disabled={uploading || images.length >= 5}
             className="aspect-square rounded border-2 border-dashed border-divider hover:border-accent transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {uploading ? (
@@ -137,7 +137,7 @@ export function ListingForm({ initialData, onSubmit, loading }: ListingFormProps
         {uploadError && (
           <p className="text-xs text-red-400 mt-1">{uploadError}</p>
         )}
-        <p className="text-xs text-muted">Up to 6 photos. First photo is the cover. Max 5MB each.</p>
+        <p className="text-xs text-muted">Up to 5 photos. First photo is the cover. Max 5MB each.</p>
       </div>
 
       {/* Title */}
