@@ -26,6 +26,12 @@ export default function DashboardPage() {
     return 'overview'
   })
   const [connectLoading, setConnectLoading] = useState(false)
+  const [stripeStatus] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('stripe')
+    }
+    return null
+  })
 
   useEffect(() => {
     const load = async () => {
@@ -143,7 +149,11 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {!profile?.stripe_onboarded && (
+          {profile?.stripe_onboarded ? (
+            <span className="text-xs font-bold uppercase tracking-wider text-accent border border-accent/30 rounded px-3 py-1.5">
+              ✓ Stripe Connected
+            </span>
+          ) : (
             <Button variant="ghost" size="sm" onClick={handleStripeConnect} disabled={connectLoading}>
               {connectLoading ? 'Connecting...' : '⚡ Connect Stripe'}
             </Button>
@@ -154,8 +164,35 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stripe banner */}
-      {!profile?.stripe_onboarded && (
+      {/* Stripe status banners */}
+      {stripeStatus === 'success' && (
+        <div className="border border-accent/30 bg-accent/10 rounded px-4 py-3 mb-6">
+          <p className="text-sm text-accent font-semibold">
+            Stripe connected — you can now receive payments.
+          </p>
+        </div>
+      )}
+      {(stripeStatus === 'incomplete' || stripeStatus === 'refresh') && (
+        <div className="border border-yellow-500/30 bg-yellow-500/10 rounded px-4 py-3 mb-6 flex items-center justify-between gap-4">
+          <p className="text-sm text-yellow-300">
+            Stripe setup incomplete. Finish connecting to accept payments.
+          </p>
+          <Button size="sm" variant="outline" onClick={handleStripeConnect} disabled={connectLoading}>
+            {connectLoading ? '...' : 'Continue Setup'}
+          </Button>
+        </div>
+      )}
+      {stripeStatus === 'error' && (
+        <div className="border border-red-500/30 bg-red-500/10 rounded px-4 py-3 mb-6 flex items-center justify-between gap-4">
+          <p className="text-sm text-red-400">
+            Stripe connection failed. Please try again.
+          </p>
+          <Button size="sm" variant="outline" onClick={handleStripeConnect} disabled={connectLoading}>
+            {connectLoading ? '...' : 'Retry'}
+          </Button>
+        </div>
+      )}
+      {!profile?.stripe_onboarded && !stripeStatus && (
         <div className="border border-yellow-500/30 bg-yellow-500/10 rounded px-4 py-3 mb-6 flex items-center justify-between gap-4">
           <p className="text-sm text-yellow-300">
             Connect your Stripe account to start receiving payments.
